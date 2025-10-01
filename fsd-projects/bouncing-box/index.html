@@ -348,7 +348,7 @@
         // If the click target is not the box, show red flash
         if (!$(e.target).hasClass('box')) {
           missCount++;
-          if (missCount >= 10) {
+          if (missCount >= 5) {
             // Flashbang effect
             $root.addClass("flashbang");
             flashbangText.show();
