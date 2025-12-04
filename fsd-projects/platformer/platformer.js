@@ -66,13 +66,12 @@ for (let i = 90; i < 120; i++) {
 }
 
     for (let i = 150; i < 170; i++) {
-  createCannon("top", 200 + (i * 5), 1200);
+  createCannon("top", 200 + (i * 5), 1800);
 }
 
     for (let i = 170; i < 200; i++) {
-  createCannon("top", 200 + (i * 5), 1050);
+  createCannon("top", 200 + (i * 5), 1350);
 }
-
 
 
 
