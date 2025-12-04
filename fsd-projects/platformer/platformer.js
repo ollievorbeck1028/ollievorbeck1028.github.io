@@ -17,10 +17,10 @@ $(function () {
     }
 
     // Create walls - do not delete or modify this code
-    createPlatform(-50, -50, canvas.width + 100, 50 ); // top wall
-    createPlatform(-50, canvas.height - 10, canvas.width + 100, 200,); // bottom wall
-    createPlatform(-50, -50, 50, canvas.height + 500 ); // left wall
-    createPlatform(canvas.width, -50, 50, canvas.height + 100 ); // right wall
+    createPlatform(-50, -50, canvas.width + 100, 50); // top wall
+    createPlatform(-50, canvas.height - 10, canvas.width + 100, 200, "navy"); // bottom wall
+    createPlatform(-50, -50, 50, canvas.height + 500); // left wall
+    createPlatform(canvas.width, -50, 50, canvas.height + 100); // right wall
 
     //////////////////////////////////
     // ONLY CHANGE BELOW THIS POINT //
@@ -31,56 +31,79 @@ $(function () {
 
 
     // TODO 2 - Create Platforms
-  //                  |
-  //           -->   \|/   <-->  
-createPlatform(250, 650, 90, 10, "red");
-createPlatform(350, 490, 125, 10, "red");
-createPlatform(470, 390, 20, 10, "red");
-createPlatform(594, 310, 12, 500, "white");
-createPlatform(594, 0, 12, 200, "white");
-createPlatform(606, 650, 75, 10, "red");
-createPlatform(850, 150, 12, 600, "white");
-createPlatform(850, 0, 12, 50, "white");
-createPlatform(400, 600, 90, 10, "red");
-//stays red
-createPlatform(840, 500, 10, 10, "red");
-createPlatform(840, 380, 10, 10, "red");
-createPlatform(840, 620, 10, 10, "red");
-createPlatform(840, 260, 10, 10, "red");
+     createPlatform(500, 0, 20, 200);
 
-createPlatform(660, 200, 10, 100, "black");
-createPlatform(870, 620, 100, 10, "red"); 
-createPlatform(1050, 550, 50, 10, "red");
-createPlatform(920, 50, 10, 100, "black");
-createPlatform(850, 50, 75, 10, "black");
-createPlatform(594, 200, 75, 10, "black");
-createPlatform(1150, 450, 100, 10, "red");
-createPlatform(1300, 350, 10, 5000, "white");
-createPlatform(200, 400, 50, 10, "red");
-createPlatform(10, 700, 100, 10, "red");
-createPlatform(1300, 700, 100, 10, "red");
-
-
-
+for (let i = 0; i < 40; i++) {
+  createPlatform(500, 0 + (i * 20), 200);
+}
     // TODO 3 - Create Collectables
+createCollectable("database", 1350, 700);
 
-createCollectable("coin", 625, 150, 0, 0);
-createCollectable("coin", 900, 570, 0, 0);
-createCollectable("coin", 200, 340, 0, 0);
-createCollectable("coin", 825, 75, 0, 0);
-createCollectable("coin", 1325, 660, 0, 0);
+
+for (let i = 0; i < 40; i++) {
+  createCannon("top", 0 + (i * 5), 1500);
+}
+
+
+
+for (let i = 0; i < 20; i++) {
+  createCannon("top", 200 + (i * 5), 1500);
+}
+for (let i = 20; i < 40; i++) {
+  createCannon("top", 200 + (i * 5), 1550);
+}
+for (let i = 40; i < 70; i++) {
+  createCannon("top", 200 + (i * 5), 1000);
+}
+
+    
+for (let i = 90; i < 120; i++) {
+  createCannon("top", 200 + (i * 5), 1200);
+}
+
+    for (let i = 120; i < 150; i++) {
+  createCannon("top", 200 + (i * 5), 1600);
+}
+
+    for (let i = 150; i < 170; i++) {
+  createCannon("top", 200 + (i * 5), 1200);
+}
+
+    for (let i = 170; i < 200; i++) {
+  createCannon("top", 200 + (i * 5), 1050);
+}
+
+
+
+
     
     // TODO 4 - Create Cannons
-createCannon("top", 1000, 1000);
-createCannon("left", 690, 50);
-createCannon("top", 600, 1200);
 
-    
+
+
+
+
+
+//    const cannonSpeeds = [
+//     500, // Speed for the first cannon
+//     550, // Speed for the second cannon
+//     600,
+//     650,
+//     700,
+//     750, // Speed for the sixth cannon
+//     800,
+//     850,
+//     900,
+//     950  // Speed for the tenth cannon
+// 
+
+
+}
     
     //////////////////////////////////
     // ONLY CHANGE ABOVE THIS POINT //
     //////////////////////////////////
-  }
+  
 
   registerSetup(setup);
 });

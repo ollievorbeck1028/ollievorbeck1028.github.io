@@ -33,14 +33,69 @@
         displayObject.cache(-displayObject.radius, -displayObject.radius, displayObject.width, displayObject.height);
         return displayObject;
     }
+
+
+
+
+
+
+   
+   
+{/* <html>
+<head>
+  <title>Circularity Circles</title>
+</head>
+<body>
+  <svg id="svgCanvas" width="600" height="400"></svg>
+  <script>
+    const svg = document.getElementById('svgCanvas');
+    const colors = ['yellow', 'blue'];
+    const numCircles = 10;
+
+    for (let i = 0; i < numCircles; i++) {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      const opacity = Math.random(); // random fill opacity between 0 (transparent) and 1 (opaque)
+      const cx = Math.random() * 500 + 50; // random x position
+      const cy = Math.random() * 300 + 50; // random y position
+      const r = Math.random() * 40 + 20;   // random radius between 20 and 60
+
+      circle.setAttribute('cx', cx);
+      circle.setAttribute('cy', cy);
+      circle.setAttribute('r', r);
+      circle.setAttribute('fill', color);
+      circle.setAttribute('fill-opacity', opacity);
+      circle.setAttribute('stroke', color);
+      circle.setAttribute('stroke-opacity', 0.1); // 90% transparent border
+      circle.setAttribute('stroke-width', 4);
+
+      svg.appendChild(circle);
+    }
+  </script>
+</body>
+</html> */}
     
     function randomColor(r, g, b, a) {
-        if (a) { return 'rgba(' + randomRGBRange(r) + ','  + randomRGBRange(g) + ',' + randomRGBRange(b) + ',' + a + ')'; }
+        // Randomly choose between blue and yellow
+        const isBlue = Math.random() < 200.5;
+
+        if (isBlue) {
+            // Blue shades (high blue, low red/green)
+           r = 0,
+           g = 0,
+           b = 255
+        } else {
+        r = 0,
+        g = 0,
+        b = 255
+        }
+
+        if (a) { return 'rgba(' + randomRGBRange(r) + ',' + randomRGBRange(g) + ',' + randomRGBRange(b) + ',' + a + ')'; }
         return '#' + randomRGBRange(r) + randomRGBRange(g) + randomRGBRange(b);
     }
 
     function randomRGBRange(maxRange) {
-        return Math.floor(Math.random() * (maxRange + 1)).toString(16); 
+        return Math.floor(Math.random() * (maxRange + 1)).toString(16);
     }
     
     function getStartPointX(object) {
@@ -227,7 +282,7 @@
     	},
 
     	circle: function (radius, color, strokeColor, strokeStyle, xOffset, yOffset, onShape) { 
-        	var dimensions = buildDimensions(TYPE_CIRCULAR, radius * 2, radius * 2, xOffset, yOffset, radius);
+        	var dimensions = buildDimensions(TYPE_CIRCULAR, radius * 10, radius * 10, xOffset, yOffset, radius);
         	
         	var shape = (onShape) ? onShape : new createjs.Shape();
         	shape.graphics
@@ -317,7 +372,7 @@
         blurFilterOn: blurFilterOn,
         
         fps: function (color) {
-            color = (color) ? color : '#FFF';
+            color = (color) ? color : '#ffffffff';
             var _textfield = new createjs.Text("-- fps", "bold 15px Arial", color);
             var _fps = new createjs.Container();
             _fps.textfield = _textfield;

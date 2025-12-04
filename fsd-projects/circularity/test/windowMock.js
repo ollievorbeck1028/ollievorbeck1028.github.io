@@ -1,8 +1,8 @@
 var circleID = 0;
 const canvas = {
     name: "canvas",
-    width: 100,
-    height: 100
+    width: auto,
+    height: auto
 };
 const view = {
     name: "view",

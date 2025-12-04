@@ -20,16 +20,20 @@ var init = function (window) {
         ///////////////////
         
         // TODO 1 : Declare and initialize our variables
-var circle; // variable to hold a single circle when creating circles / iterating
-var circles = []; // variable to store all circles in an array
+var circle;
+        var circles = [];
+        var maxCircles = prompt("Enter the number of desired circles.");
+
+        console.log(maxCircles)
 
 
         // TODO 2 : Create a function that draws a circle 
-        function drawCircle() {
-circle = draw.randomCircleInArea(canvas, true, true, "#999", 2);
-physikz.addRandomVelocity(circle, canvas, 5, 5);
-view.addChild(circle);
-circles.push(circle);
+       function drawCircle() {
+             // Code to draw a circle
+        circle = draw.randomCircleInArea(canvas, true, 0, '#00ff22ff', -1);
+        physikz.addRandomVelocity(circle, canvas, Math.random() * 2, Math.random() * 2);
+        view.addChild(circle);
+        circles.push(circle);
 }
 
 
@@ -42,7 +46,7 @@ circles.push(circle);
 // drawCircle();
 
         // TODO 7 : Use a loop to create multiple circles
-for (var i = 0; i < 100; i++) {
+ for (var i = 0; i < maxCircles; i++) {
             drawCircle()
         }
 

@@ -72,10 +72,10 @@ let offsetY = 0;
 // Platform, cannon, projectile, and collectable variables
 let platforms = [];
 let cannons = [];
-const cannonWidth = 1;
-const cannonHeight = 1;
+const cannonWidth = 118;
+const cannonHeight = 80;
 let projectiles = [];
-const defaultProjectileWidth = 50;
+const defaultProjectileWidth = 24;
 const defaultProjectileHeight = defaultProjectileWidth;
 const collectableWidth = 40;
 const collectableHeight = 40;
@@ -92,11 +92,10 @@ let halleImage;
 let animationDetails = {};
 
 var collectableList = {
-  database: { image: "https://static.vecteezy.com/system/resources/previews/013/362/728/non_2x/beach-ball-transparent-free-png.png" },
+  database: { image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRZU5k4dGF90KJBrRATbbFvC7c5q4jIj6uo2xeL2V_cyzgAT5E:https://i.pinimg.com/736x/28/6c/b9/286cb93c33c9f55331d11d6909e74ed0.jpg&s" },
   diamond: { image: "images/collectables/diamond-head.png" },
   grace: { image: "images/collectables/grace-head.png" },
   kennedi: { image: "images/collectables/kennedi-head.png" },
   max: { image: "images/collectables/max-head.png" },
   steve: { image: "images/collectables/steve-head.png" },
-  coin: {image: 'images/collectables/coin-spinning.gif'}
 };
