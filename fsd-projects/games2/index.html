@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Zoom Drawing Canvas Project Manager v3 (Better CSS)</title>
+    <style>
+        /* CSS Reset and Base Styles */
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            background-color: #1a1a1a; 
+            color: #e0e0e0; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+        }
+
+        /* Toolbar Styling (Editor UI) */
+        #toolbar { 
+            padding: 8px 15px; 
+            background: #2c2c2c; 
+            display: none; /* Hidden by default, shown when editing */
+            gap: 12px; 
+            align-items: center; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            flex-wrap: wrap; /* Allows toolbar to wrap on small screens */
+        }
+        
+        #toolbar button, #toolbar select, #toolbar input[type="range"], #toolbar input[type="color"] { 
+            padding: 6px 12px; 
+            cursor: pointer; 
+            background: #444; 
+            border: 1px solid #555; 
+            color: white; 
+            border-radius: 4px; 
+            transition: background 0.2s;
+        }
+
+        #toolbar button:hover { 
+            background: #007bff; /* Primary blue color on hover */
+            border-color: #0056b3;
+        }
+
+        #toolbar button#backToHomeBtn {
+            background-color: #28a745; /* Green color for 'Save & Home' */
+        }
+
+        #toolbar label { 
+            font-size: 13px; 
+            margin-left: 5px;
+            color: #aaa;
+        }
+
+        /* Canvas Styling */
+        #canvas { 
+            display: none; /* Hidden by default, shown when editing */
+            background-color: #fff; /* White canvas background */
+            flex-grow: 1; 
+            cursor: crosshair; 
+        }
+
+        /* Home Menu Styling (Project Management UI) */
+        #homeMenu { 
+            display: flex; 
+            flex-direction: column; 
+            padding: 40px 20px; 
+            gap: 20px; 
+            overflow-y: auto; 
+            flex-grow: 1; 
+        }
+
+        #homeMenu h2 {
+            color: #007bff;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+
+        #newProjectBtn {
+            padding: 12px 20px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: fit-content;
+        }
+
+        #newProjectBtn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Project Card Styling */
+        .project-card { 
+            background: #333; 
+            padding: 15px; 
+            border-radius: 8px; 
+            display: flex; 
+            gap: 20px; 
+            cursor: pointer; 
+            border: 1px solid #444; 
+            align-items: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .project-card:hover { 
+            background: #4a4a4a; 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+        .project-card img { 
+            width: 120px; 
+            height: 90px; 
+            object-fit: cover; 
+            border-radius: 4px; 
+            background: #555; 
+            border: 1px solid #777;
+        }
+        .project-details { flex-grow: 1; }
+        .project-details h3 { margin: 0 0 5px 0; color: white; }
+        .project-details p { margin: 0; font-size: 12px; color: #aaa; }
+        .delete-btn { 
+            background: #dc3545 !important; 
+            margin-left: auto; 
+            border: none !important;
+        }
+        .delete-btn:hover {
+            background: #c82333 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toolbar">
+        <button id="backToHomeBtn">Save & Home</button>
+        <label>Tool:</label>
+        <button id="tool_brush">Brush</button>
+        <button id="tool_line">Line</button>
+        <button id="tool_square">Square</button>
+        <button id="tool_circle">Circle</button>
+        <button id="tool_triangle">Triangle</button>
+        
+        <label for="colorPicker">Color:</label>
+        <input type="color" id="colorPicker" value="#007bff">
+
+        <label for="sizeSlider">Size: <span id="sizeValue">4</span></label>
+        <input type="range" id="sizeSlider" min="1" max="50" value="4">
+        
+        <label for="opacitySlider">Opacity: <span id="opacityValue">1.0</span></label>
+        <input type="range" id="opacitySlider" min="0" max="1" step="0.01" value="1">
+        
+        <label for="layerSelect">Layer:</label>
+        <select id="layerSelect"></select>
+        
+        <button id="undoBtn">Undo</button>
+        <button id="redoBtn">Redo</button>
+    </div>
+    
+    <canvas id="canvas"></canvas>
+
+    <div id="homeMenu">
+        <h2>My Projects</h2>
+        <button id="newProjectBtn">Start New Project</button>
+        <div id="projectList">
+            <!-- Project cards will be injected here by JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        // --- All JavaScript code from the previous response remains unchanged and is inserted here ---
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const toolbar = document.getElementById('toolbar');
+        const homeMenu = document.getElementById('homeMenu');
+        const projectList = document.getElementById('projectList');
+        const colorPicker = document.getElementById('colorPicker');
+        const sizeSlider = document.getElementById('sizeSlider');
+        const opacitySlider = document.getElementById('opacitySlider');
+        const layerSelect = document.getElementById('layerSelect');
+        const sizeValueDisplay = document.getElementById('sizeValue');
+        const opacityValueDisplay = document.getElementById('opacityValue');
+
+        let canvasWidth, canvasHeight;
+        let viewportTransform = { x: 0, y: 0, scale: 1 }; 
+        let currentTool = 'brush';
+        let currentColor = '#007bff'; // Default color changed to blue for CSS theme
+        let currentOpacity = 1.0;
+        let currentSize = 4;
+        let isDrawing = false;
+        let isPanning = false;
+        let startPointWorld = {};
+        let inProgressItem = null; 
+        let activeProjectID = null;
+
+        const projectDataStore = {
+            layers: { 'Layer 1': [] }
+        };
+        let activeLayer = 'Layer 1';
+
+        const historyStack = [];
+        let historyIndex = -1;
+
+        // --- Core UI Management ---
+
+        function showHomeMenu() {
+            toolbar.style.display = 'none';
+            canvas.style.display = 'none';
+            homeMenu.style.display = 'flex';
+            loadProjects(); // Refresh the list of projects
+        }
+
+        function showEditor(projectID = null) {
+            homeMenu.style.display = 'none';
+            toolbar.style.display = 'flex';
+            canvas.style.display = 'block';
+
+            if (projectID) {
+                const savedData = JSON.parse(localStorage.getItem(`drawingProject_${projectID}`));
+                if (savedData) {
+                    activeProjectID = projectID;
+                    projectDataStore.layers = {}; 
+                    Object.assign(projectDataStore.layers, savedData.layers);
+                    viewportTransform = savedData.viewport || { x: 0, y: 0, scale: 1 };
+                }
+            } else {
+                activeProjectID = `project_${Date.now()}`;
+                projectDataStore.layers = { 'Layer 1': [] };
+                viewportTransform = { x: 0, y: 0, scale: 1 };
+            }
+
+            activeLayer = Object.keys(projectDataStore.layers)[0] || 'Layer 1';
+            setupLayersDropdown();
+            historyStack.length = 0;
+            historyIndex = -1;
+            saveState();
+            resizeCanvas();
+        }
+
+        // --- Local Storage Management ---
+
+        function saveProjectToStorage() {
+            if (!activeProjectID) return;
+
+            render(true); 
+            const previewCanvas = document.createElement('canvas');
+            previewCanvas.width = 200;
+            previewCanvas.height = 150;
+            const pCtx = previewCanvas.getContext('2d');
+            pCtx.drawImage(canvas, 0, 0, 200, 150); 
+            const previewImage = previewCanvas.toDataURL('image/jpeg', 0.5);
+            render(); 
+
+            const projectData = {
+                id: activeProjectID,
+                name: `Untitled Project (${new Date().toLocaleDateString()})`,
+                lastModified: Date.now(),
+                viewport: viewportTransform,
+                layers: projectDataStore.layers,
+                preview: previewImage
+            };
+            
+            localStorage.setItem(`drawingProject_${activeProjectID}`, JSON.stringify(projectData));
+        }
+
+        function loadProjects() {
+            projectList.innerHTML = '';
+            const projectKeys = Object.keys(localStorage).filter(key => key.startsWith('drawingProject_'));
+            
+            if (projectKeys.length === 0) {
+                projectList.innerHTML = '<p>No saved projects yet. Start a new one!</p>';
+                return;
+            }
+
+            projectKeys.sort((a, b) => JSON.parse(localStorage.getItem(b)).lastModified - JSON.parse(localStorage.getItem(a)).lastModified);
+
+            projectKeys.forEach(key => {
+                const project = JSON.parse(localStorage.getItem(key));
+                const card = document.createElement('div');
+                card.classList.add('project-card');
+                card.innerHTML = `
+                    <img src="${project.preview || ''}" alt="Project preview">
+                    <div class="project-details">
+                        <h3>${project.name}</h3>
+                        <p>Last edited: ${new Date(project.lastModified).toLocaleString()}</p>
+                    </div>
+                    <button class="delete-btn" onclick="deleteProject('${project.id}', event)">Delete</button>
+                `;
+                card.addEventListener('click', () => showEditor(project.id));
+                projectList.appendChild(card);
+            });
+        }
+        
+        window.deleteProject = function(projectId, event) {
+            event.stopPropagation();
+            if (confirm('Are you sure you want to delete this project?')) {
+                localStorage.removeItem(`drawingProject_${projectId}`);
+                loadProjects();
+            }
+        }
+        
+        // --- Remaining Drawing Logic ---
+
+        function updateToolbarDisplays() {
+            sizeValueDisplay.textContent = currentSize;
+            opacityValueDisplay.textContent = currentOpacity;
+        }
+
+        function resizeCanvas() {
+            canvasWidth = window.innerWidth;
+            canvasHeight = window.innerHeight - document.getElementById('toolbar').offsetHeight; 
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            render();
+        }
+        
+        function getCanvasBounds() {
+            return canvas.getBoundingClientRect();
+        }
+
+        function screenToWorld(screenX, screenY) {
+            const bounds = getCanvasBounds();
+            const canvasX = screenX - bounds.left;
+            const canvasY = screenY - bounds.top;
+            return {
+                x: (canvasX - viewportTransform.x) / viewportTransform.scale,
+                y: (canvasY - viewportTransform.y) / viewportTransform.scale
+            };
+        }
+        
+        function saveState() {
+            historyStack.splice(historyIndex + 1);
+            historyStack.push(JSON.parse(JSON.stringify(projectDataStore.layers)));
+            historyIndex++;
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                projectDataStore.layers = JSON.parse(JSON.stringify(historyStack[historyIndex]));
+                render();
+            }
+        }
+
+        function redo() {
+            if (historyIndex < historyStack.length - 1) {
+                historyIndex++;
+                 projectDataStore.layers = JSON.parse(JSON.stringify(historyStack[historyIndex]));
+                render();
+            }
+        }
+        
+        function setupLayersDropdown() {
+            layerSelect.innerHTML = '';
+            Object.keys(projectDataStore.layers).forEach(layerName => {
+                const option = document.createElement('option');
+                option.value = layerName;
+                option.textContent = layerName;
+                if (layerName === activeLayer) {
+                    option.selected = true;
+                }
+                layerSelect.appendChild(option);
+            });
+        }
+
+        function render(forcePermanentItemsOnly = false) {
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+            ctx.setTransform(
+                viewportTransform.scale, 0, 0,
+                viewportTransform.scale,
+                viewportTransform.x, viewportTransform.y
+            );
+            
+            Object.values(projectDataStore.layers).forEach(items => {
+                items.forEach(item => drawItem(item));
+            });
+
+            if (inProgressItem && !forcePermanentItemsOnly) {
+                drawItem(inProgressItem);
+            }
+        }
+
+        function drawItem(item) {
+           ctx.globalAlpha = item.opacity; 
+            ctx.strokeStyle = item.color;
+            ctx.fillStyle = item.color;
+            ctx.lineWidth = item.size / viewportTransform.scale;
+
+            if (item.type === 'brush') {
+                ctx.beginPath();
+                ctx.moveTo(item.points[0].x, item.points[0].y); 
+                for (let i = 1; i < item.points.length; i++) {
+                    ctx.lineTo(item.points[i].x, item.points[i].y);
+                }
+                ctx.stroke();
+            } else if (item.type === 'line') {
+                ctx.beginPath();
+                ctx.moveTo(item.p1.x, item.p1.y);
+                ctx.lineTo(item.p2.x, item.p2.y);
+                ctx.stroke();
+            } else if (item.type === 'square') {
+                ctx.strokeRect(item.x, item.y, item.width, item.height);
+            } else if (item.type === 'circle') {
+                ctx.beginPath();
+                ctx.arc(item.x, item.y, item.radius, 0, 2 * Math.PI);
+                ctx.stroke();
+            } else if (item.type === 'triangle') {
+                ctx.beginPath();
+                ctx.moveTo(item.p1.x, item.p1.y);
+                ctx.lineTo(item.p2.x, item.p2.y);
+                ctx.lineTo(item.p3.x, item.p3.y);
+                ctx.closePath();
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1.0;
+        }
+
+        // --- Event Handlers ---
+        canvas.addEventListener('mousedown', (e) => {
+           if (e.button === 2 || (e.button === 0 && e.ctrlKey)) { 
+                isPanning = true;
+                dragStartX = e.clientX - viewportTransform.x;
+                dragStartY = e.clientY - viewportTransform.y;
+                return;
+            }
+            
+            isDrawing = true;
+            startPointWorld = screenToWorld(e.clientX, e.clientY);
+            
+            if (['brush', 'line', 'square', 'circle', 'triangle'].includes(currentTool)) {
+                 inProgressItem = {
+                    type: currentTool,
+                    color: currentColor,
+                    opacity: currentOpacity,
+                    size: currentSize,
+                    points: (currentTool === 'brush') ? [startPointWorld] : undefined,
+                    p1: (currentTool === 'line' || currentTool === 'triangle') ? startPointWorld : undefined,
+                    p2: (currentTool === 'line' || currentTool === 'triangle') ? startPointWorld : undefined,
+                    x: (currentTool === 'square' || currentTool === 'circle') ? startPointWorld.x : undefined,
+                    y: (currentTool === 'square' || currentTool === 'circle') ? startPointWorld.y : undefined,
+                 };
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const currentPoint = screenToWorld(e.clientX, e.clientY);
+
+            if (isPanning) {
+                viewportTransform.x = e.clientX - dragStartX;
+                viewportTransform.y = e.clientY - dragStartY;
+            } else if (isDrawing && inProgressItem) {
+                if (currentTool === 'brush') {
+                    inProgressItem.points.push(currentPoint);
+                } else if (currentTool === 'line') {
+                    inProgressItem.p2 = currentPoint;
+                } else if (currentTool === 'square') {
+                    inProgressItem.width = currentPoint.x - startPointWorld.x;
+                    inProgressItem.height = currentPoint.y - startPointWorld.y;
+                } else if (currentTool === 'circle') {
+                    const dx = currentPoint.x - startPointWorld.x;
+                    const dy = currentPoint.y - startPointWorld.y;
+                    inProgressItem.radius = Math.sqrt(dx * dx + dy * dy);
+                } else if (currentTool === 'triangle') {
+                    inProgressItem.p2 = currentPoint;
+                    inProgressItem.p3 = { x: startPointWorld.x + (currentPoint.x - startPointWorld.x), y: startPointWorld.y + (currentPoint.y - startPointWorld.y) * -1 };
+                }
+            }
+            render();
+        });
+
+        window.addEventListener('mouseup', (e) => {
+            if (isPanning) {
+                isPanning = false;
+                saveProjectToStorage();
+            } else if (isDrawing && inProgressItem) {
+                isDrawing = false;
+                
+                projectDataStore.layers[activeLayer].push(inProgressItem);
+                inProgressItem = null;
+
+                saveState();
+                saveProjectToStorage();
+                render();
+            }
+        });
+
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const zoomFactor = 1.05;
+            const oldScale = viewportTransform.scale;
+            let newScale;
+
+            if (e.deltaY < 0) {
+                newScale = oldScale * zoomFactor;
+            } else {
+                newScale = oldScale / zoomFactor;
+            }
+            
+            const mouseBeforeZoom = screenToWorld(e.clientX, e.clientY);
+            viewportTransform.scale = newScale;
+            const mouseAfterZoom = screenToWorld(e.clientX, e.clientY);
+
+            viewportTransform.x += (mouseAfterZoom.x - mouseBeforeZoom.x) * newScale;
+            viewportTransform.y += (mouseAfterZoom.y - mouseBeforeZoom.y) * newScale;
+
+            render();
+        });
+
+        // --- Toolbar Functionality Connections ---
+        document.getElementById('tool_brush').addEventListener('click', () => currentTool = 'brush');
+        document.getElementById('tool_line').addEventListener('click', () => currentTool = 'line');
+        document.getElementById('tool_square').addEventListener('click', () => currentTool = 'square');
+        document.getElementById('tool_circle').addEventListener('click', () => currentTool = 'circle');
+        document.getElementById('tool_triangle').addEventListener('click', () => currentTool = 'triangle');
+        document.getElementById('undoBtn').addEventListener('click', undo);
+        document.getElementById('redoBtn').addEventListener('click', redo);
+        document.getElementById('backToHomeBtn').addEventListener('click', () => {
+            saveProjectToStorage(); 
+            showHomeMenu();
+        });
+        document.getElementById('newProjectBtn').addEventListener('click', () => showEditor(null));
+        
+        colorPicker.addEventListener('change', (e) => currentColor = e.target.value);
+        sizeSlider.addEventListener('input', (e) => {
+            currentSize = parseFloat(e.target.value);
+            updateToolbarDisplays();
+        });
+        opacitySlider.addEventListener('input', (e) => {
+            currentOpacity = parseFloat(e.target.value);
+            updateToolbarDisplays();
+        });
+        layerSelect.addEventListener('change', (e) => activeLayer = e.target.value);
+
+        // Initial setup
+        window.addEventListener('resize', resizeCanvas);
+        showHomeMenu(); 
+        updateToolbarDisplays();
+    </script>
+</body>
+</html>
